@@ -1,0 +1,173 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  REQUESTER
+  APPROVER
+  TECHNICIAN
+  MANAGER
+  STOREKEEPER
+  ADMIN
+}
+
+enum RequestStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  ASSIGNED
+  FIXED
+  ESCALATED
+  NEED_SPARE
+  SPARE_ALLOCATED
+  PURCHASE_REQUESTED
+}
+
+enum Urgency {
+  LOW
+  MEDIUM
+  HIGH
+}
+
+enum AssetStatus {
+  ACTIVE
+  UNDER_MAINTENANCE
+  FAULTY
+  RETIRED
+}
+
+enum SpareStatus {
+  PENDING
+  APPROVED
+  ALLOCATED
+  PURCHASE_REQUESTED
+}
+
+model User {
+  id            String    @id @default(cuid())
+  name          String
+  email         String    @unique
+  password      String
+  role          Role      @default(REQUESTER)
+  department    String?
+  phone         String?
+  isActive      Boolean   @default(true)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  submittedRequests  SupportRequest[] @relation("SubmittedBy")
+  assignedRequests   SupportRequest[] @relation("AssignedTo")
+  approvedRequests   SupportRequest[] @relation("ApprovedBy")
+  spareRequests      SpareRequest[]
+  feedbacks          Feedback[]
+  notifications      Notification[]
+  auditLogs          AuditLog[]
+}
+
+model SupportRequest {
+  id              String        @id @default(cuid())
+  requestNumber   String        @unique
+  title           String
+  description     String
+  issueType       String
+  urgency         Urgency       @default(MEDIUM)
+  status          RequestStatus @default(PENDING)
+  rejectionReason String?
+  resolutionNote  String?
+  location        String?
+
+  submittedById   String
+  submittedBy     User          @relation("SubmittedBy", fields: [submittedById], references: [id])
+
+  assignedToId    String?
+  assignedTo      User?         @relation("AssignedTo", fields: [assignedToId], references: [id])
+
+  approvedById    String?
+  approvedBy      User?         @relation("ApprovedBy", fields: [approvedById], references: [id])
+
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  spareRequests   SpareRequest[]
+  feedback        Feedback?
+  notifications   Notification[]
+}
+
+model SpareRequest {
+  id            String      @id @default(cuid())
+  spareName     String
+  quantity      Int         @default(1)
+  description   String?
+  status        SpareStatus @default(PENDING)
+
+  requestId     String
+  request       SupportRequest @relation(fields: [requestId], references: [id])
+
+  requestedById String
+  requestedBy   User        @relation(fields: [requestedById], references: [id])
+
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+}
+
+model Feedback {
+  id          String   @id @default(cuid())
+  rating      Int
+  comment     String?
+
+  requestId   String   @unique
+  request     SupportRequest @relation(fields: [requestId], references: [id])
+
+  userId      String
+  user        User     @relation(fields: [userId], references: [id])
+
+  createdAt   DateTime @default(now())
+}
+
+model Asset {
+  id           String      @id @default(cuid())
+  assetNumber  String      @unique
+  type         String
+  model        String
+  serialNumber String      @unique
+  location     String
+  status       AssetStatus @default(ACTIVE)
+  purchaseDate DateTime?
+  notes        String?
+
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+}
+
+model Notification {
+  id        String   @id @default(cuid())
+  title     String
+  message   String
+  isRead    Boolean  @default(false)
+
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+
+  requestId String?
+  request   SupportRequest? @relation(fields: [requestId], references: [id])
+
+  createdAt DateTime @default(now())
+}
+
+model AuditLog {
+  id        String   @id @default(cuid())
+  action    String
+  entity    String
+  entityId  String
+  details   String?
+
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+
+  createdAt DateTime @default(now())
+}
