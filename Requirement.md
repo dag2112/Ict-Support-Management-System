@@ -7,19 +7,19 @@ DEPARTMENT OF SOFTWARE ENGINEERING
 Project Title: Ict Support Management System
 A Senior Project Documentation Submitted to Woldia University in Partial Fulfillment of the Requirement for the Degree of Bachelor of Science in Software Engineering             Group members:                                                 id:
 1.	Dagim W/kidan                                                 1304693
-2.	Geleta Bekele                                                           1301323
-3.	Kaleb Teshome                                                        1301696
+2.	Geleta Bekele                                                   1301323
+3.	Kaleb Teshome                                                   1301696
 4.	Kaleb Melaku                                                    1301697
 5.	Kaleab Bayeh                                                    1301691
                         
-                                                                                        Advisor: Abiot 
+ Advisor: Abiot 
                        
-                                                                                       Submission Date :9/5/2018
-                                                                                        Woldia , Ethiopia
+Submission Date :9/5/2018
+Woldia , Ethiopia
 
 
 
-                                                        Approval
+Approval
 Name	Signature	Date
 __________________________	__________________________	__________________
 __________________________	__________________________	__________________
