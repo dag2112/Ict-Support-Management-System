@@ -1,123 +1,130 @@
 "use client";
-import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { useAuth } from "@/context/AuthContext";
+import ThemeToggle from "@/components/ThemeToggle";
 
-const DEMO_ACCOUNTS = [
-  { email: "abebe@woldia.edu.et",  password: "Abebe@1234",  role: "Requester" },
-  { email: "tigist@woldia.edu.et", password: "Tigist@1234", role: "Approver" },
-  { email: "yonas@woldia.edu.et",  password: "Yonas@1234",  role: "Technician" },
-  { email: "meron@woldia.edu.et",  password: "Meron@1234",  role: "Manager" },
-  { email: "dawit@woldia.edu.et",  password: "Dawit@1234",  role: "Store Keeper" },
-  { email: "admin@woldia.edu.et",  password: "Admin@1234",  role: "Admin" },
-];
-
-function Toast({ message, onClose }: { message: string; onClose: () => void }) {
-  useEffect(() => {
-    const t = setTimeout(onClose, 4000);
-    return () => clearTimeout(t);
-  }, [onClose]);
-
-  return (
-    <div className="fixed top-6 left-1/2 -translate-x-1/2 z-50">
-      <div className="flex items-center gap-3 bg-red-600 text-white px-5 py-4 rounded-xl shadow-2xl min-w-[320px] max-w-sm">
-        <span className="text-2xl">⚠️</span>
-        <p className="text-sm font-medium flex-1">{message}</p>
-        <button onClick={onClose} className="text-white/70 hover:text-white text-xl leading-none ml-2">✕</button>
-      </div>
-    </div>
-  );
-}
-
-export default function LoginPage() {
-  const { login } = useAuth();
+export default function HomePage() {
   const router = useRouter();
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [toast, setToast] = useState("");
-  const [loading, setLoading] = useState(false);
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setToast("");
-    setLoading(true);
-    try {
-      await login(email, password);
-      router.push("/dashboard");
-    } catch (err: any) {
-      setToast(err.message || "Invalid credentials. Please try again.");
-    } finally {
-      setLoading(false);
-    }
-  };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-900 to-blue-700 flex items-center justify-center p-4">
-      {toast && <Toast message={toast} onClose={() => setToast("")} />}
-
-      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md p-8">
-        <div className="text-center mb-8">
-          <div className="w-16 h-16 bg-blue-900 rounded-full flex items-center justify-center mx-auto mb-4">
-            <span className="text-white text-2xl font-bold">ICT</span>
+    <div className="min-h-screen bg-gradient-to-br from-blue-950 via-blue-900 to-blue-800 dark:from-gray-950 dark:via-gray-900 dark:to-gray-800 text-white flex flex-col">
+      {/* Navbar */}
+      <nav className="flex items-center justify-between px-8 py-5 border-b border-white/10">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 bg-white rounded-full flex items-center justify-center">
+            <span className="text-blue-900 font-bold text-sm">ICT</span>
           </div>
-          <h1 className="text-2xl font-bold text-gray-800">ICT Support System</h1>
-          <p className="text-gray-500 text-sm mt-1">Woldia University</p>
+          <span className="font-bold text-lg tracking-tight">ICT Support System</span>
         </div>
-
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
-            <input
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="you@woldia.edu.et"
-              required
-              className="w-full border border-gray-300 rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Password</label>
-            <input
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="••••••••"
-              required
-              className="w-full border border-gray-300 rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-          </div>
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full bg-blue-900 hover:bg-blue-800 text-white font-semibold py-2 rounded-lg transition-colors disabled:opacity-60"
-          >
-            {loading ? "Signing in..." : "Login"}
+        <div className="flex items-center gap-3">
+          <ThemeToggle />
+          <button onClick={() => router.push("/login")}
+            className="bg-white text-blue-900 font-semibold px-5 py-2 rounded-lg hover:bg-blue-50 transition-colors text-sm">
+            Login
           </button>
-        </form>
-
-        <div className="mt-6 p-4 bg-gray-50 rounded-lg text-xs text-gray-500">
-          <p className="font-semibold mb-3">Demo accounts:</p>
-          <ul className="space-y-2">
-            {DEMO_ACCOUNTS.map(({ email: e, password: pw, role }) => (
-              <li
-                key={e}
-                onClick={() => { setEmail(e); setPassword(pw); }}
-                className="flex items-center justify-between bg-white border border-gray-200 rounded-lg px-3 py-2 cursor-pointer hover:border-blue-400 hover:bg-blue-50 transition-colors"
-              >
-                <div>
-                  <p className="text-gray-700 font-medium">{e}</p>
-                  <p className="text-gray-400">pw: {pw}</p>
-                </div>
-                <span className="ml-2 px-2 py-0.5 rounded-full bg-blue-100 text-blue-700 font-medium whitespace-nowrap">
-                  {role}
-                </span>
-              </li>
-            ))}
-          </ul>
-          <p className="mt-2 text-gray-400 text-center">Click any account to auto-fill</p>
         </div>
-      </div>
+      </nav>
+
+      {/* Hero */}
+      <section className="flex-1 flex flex-col items-center justify-center text-center px-6 py-20">
+        <div className="inline-block bg-white/10 border border-white/20 text-blue-200 text-xs font-medium px-4 py-1.5 rounded-full mb-6 tracking-wide uppercase">
+          Woldia University — ICT Directorate
+        </div>
+        <h1 className="text-5xl md:text-6xl font-extrabold leading-tight max-w-3xl mb-6">
+          ICT Support &<br />Management Platform
+        </h1>
+        <p className="text-blue-200 text-lg max-w-xl mb-10 leading-relaxed">
+          A centralized platform to submit, track, and resolve ICT support requests efficiently.
+          Replacing paper-based processes with a modern, automated solution.
+        </p>
+        <div className="flex gap-4 flex-wrap justify-center">
+          <button
+            onClick={() => router.push("/login")}
+            className="bg-white text-blue-900 font-bold px-8 py-3 rounded-xl hover:bg-blue-50 transition-colors text-sm shadow-lg"
+          >
+            Get Started →
+          </button>
+          <a
+            href="#features"
+            className="border border-white/30 text-white px-8 py-3 rounded-xl hover:bg-white/10 transition-colors text-sm"
+          >
+            Learn More
+          </a>
+        </div>
+      </section>
+
+      {/* Stats */}
+      <section className="grid grid-cols-2 md:grid-cols-4 gap-px bg-white/10 border-t border-b border-white/10">
+        {[
+          { value: "6", label: "User Roles" },
+          { value: "15+", label: "Features" },
+          { value: "100%", label: "Digital" },
+          { value: "24/7", label: "Accessible" },
+        ].map(({ value, label }) => (
+          <div key={label} className="bg-blue-900/50 text-center py-8 px-4">
+            <p className="text-4xl font-extrabold text-white">{value}</p>
+            <p className="text-blue-300 text-sm mt-1">{label}</p>
+          </div>
+        ))}
+      </section>
+
+      {/* Features */}
+      <section id="features" className="py-20 px-6 max-w-6xl mx-auto w-full">
+        <h2 className="text-3xl font-bold text-center mb-12">Everything you need</h2>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          {[
+            { icon: "📋", title: "Request Submission", desc: "Submit ICT support requests electronically with issue type, urgency, and location details." },
+            { icon: "✅", title: "Approval Workflow", desc: "Approvers review and approve or reject requests with required justification." },
+            { icon: "🔧", title: "Technician Assignment", desc: "Managers assign approved requests to available technicians instantly." },
+            { icon: "🔩", title: "Spare Parts Management", desc: "Technicians request spare parts; managers approve and storekeepers allocate." },
+            { icon: "📊", title: "Reports & Analytics", desc: "Managers get real-time reports on request volume, technician performance, and trends." },
+            { icon: "🔔", title: "Notifications", desc: "Automated in-app notifications keep all stakeholders informed at every step." },
+          ].map(({ icon, title, desc }) => (
+            <div key={title} className="bg-white/5 border border-white/10 rounded-2xl p-6 hover:bg-white/10 transition-colors">
+              <div className="text-3xl mb-4">{icon}</div>
+              <h3 className="font-semibold text-lg mb-2">{title}</h3>
+              <p className="text-blue-300 text-sm leading-relaxed">{desc}</p>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* Roles */}
+      <section className="py-16 px-6 bg-white/5 border-t border-white/10">
+        <div className="max-w-4xl mx-auto text-center">
+          <h2 className="text-3xl font-bold mb-10">Built for every role</h2>
+          <div className="flex flex-wrap justify-center gap-3">
+            {[
+              { role: "Requester", color: "bg-blue-500/20 border-blue-400/30 text-blue-200" },
+              { role: "Approver", color: "bg-green-500/20 border-green-400/30 text-green-200" },
+              { role: "Technician", color: "bg-purple-500/20 border-purple-400/30 text-purple-200" },
+              { role: "Manager", color: "bg-orange-500/20 border-orange-400/30 text-orange-200" },
+              { role: "Store Keeper", color: "bg-teal-500/20 border-teal-400/30 text-teal-200" },
+              { role: "Admin", color: "bg-red-500/20 border-red-400/30 text-red-200" },
+            ].map(({ role, color }) => (
+              <span key={role} className={`border px-5 py-2 rounded-full text-sm font-medium ${color}`}>
+                {role}
+              </span>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* CTA */}
+      <section className="py-20 px-6 text-center">
+        <h2 className="text-3xl font-bold mb-4">Ready to get started?</h2>
+        <p className="text-blue-300 mb-8">Log in with your university credentials to access the platform.</p>
+        <button
+          onClick={() => router.push("/login")}
+          className="bg-white text-blue-900 font-bold px-10 py-3 rounded-xl hover:bg-blue-50 transition-colors shadow-lg"
+        >
+          Login to the System
+        </button>
+      </section>
+
+      {/* Footer */}
+      <footer className="border-t border-white/10 py-6 text-center text-blue-400 text-xs px-6">
+        © 2026 Woldia University — ICT Support Management System. Developed by Group 4, Software Engineering.
+      </footer>
     </div>
   );
 }

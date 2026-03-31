@@ -92,7 +92,10 @@ export const api = {
   deleteAsset: (id: string) =>
     request<any>(`/assets/${id}`, { method: "DELETE" }),
 
-  // Notifications
+  // Chat
+  getChatMessages: (requestId: string) => request<any[]>(`/chat/${requestId}`),
+  sendChatMessage: (requestId: string, message: string) =>
+    request<any>(`/chat/${requestId}`, { method: "POST", body: JSON.stringify({ message }) }),
   getNotifications: () => request<any[]>("/notifications"),
   markRead: (id: string) =>
     request<any>(`/notifications/${id}/read`, { method: "PUT" }),

@@ -1,6 +1,7 @@
 import "dotenv/config";
 import express from "express";
 import cors from "cors";
+import path from "path";
 import { errorHandler, notFound } from "./middleware/errorHandler";
 
 import authRoutes from "./routes/auth.routes";
@@ -11,14 +12,17 @@ import feedbackRoutes from "./routes/feedback.routes";
 import assetRoutes from "./routes/asset.routes";
 import notificationRoutes from "./routes/notification.routes";
 import reportRoutes from "./routes/report.routes";
+import chatRoutes from "./routes/chat.routes";
 
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-// Middleware
 app.use(cors({ origin: process.env.CLIENT_URL || "http://localhost:3000", credentials: true }));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
+// Serve uploaded files
+app.use("/uploads", express.static(path.join(process.cwd(), "uploads")));
 
 // Health check
 app.get("/api/health", (_req, res) => res.json({ status: "ok", timestamp: new Date().toISOString() }));
@@ -32,8 +36,8 @@ app.use("/api/feedback", feedbackRoutes);
 app.use("/api/assets", assetRoutes);
 app.use("/api/notifications", notificationRoutes);
 app.use("/api/reports", reportRoutes);
+app.use("/api/chat", chatRoutes);
 
-// Error handling
 app.use(notFound);
 app.use(errorHandler);
 

@@ -3,6 +3,7 @@ import { prisma } from "../lib/prisma";
 import { authenticate, authorize, AuthRequest } from "../middleware/auth";
 import { RequestStatus, Urgency, Role } from "@prisma/client";
 import { sendEmail, emailTemplates } from "../lib/mailer";
+import { upload } from "../lib/upload";
 
 const router = Router();
 router.use(authenticate);
@@ -11,6 +12,7 @@ const requestSelect = {
   id: true, requestNumber: true, title: true, description: true,
   issueType: true, urgency: true, status: true, location: true,
   rejectionReason: true, resolutionNote: true, createdAt: true, updatedAt: true,
+  attachments: true,
   submittedBy: { select: { id: true, name: true, email: true } },
   assignedTo: { select: { id: true, name: true, email: true } },
   approvedBy: { select: { id: true, name: true } },
@@ -66,7 +68,7 @@ router.get("/:id", async (req: AuthRequest, res: Response) => {
 });
 
 // POST /api/requests — Requester submits
-router.post("/", authorize("REQUESTER"), async (req: AuthRequest, res: Response) => {
+router.post("/", authorize("REQUESTER"), upload.array("attachments", 3), async (req: AuthRequest, res: Response) => {
   try {
     const { title, description, issueType, urgency, location } = req.body;
     if (!title || !description || !issueType)
@@ -75,12 +77,17 @@ router.post("/", authorize("REQUESTER"), async (req: AuthRequest, res: Response)
     const count = await prisma.supportRequest.count();
     const requestNumber = `REQ-${String(count + 1).padStart(4, "0")}`;
 
+    // Build attachment paths
+    const files = (req.files as Express.Multer.File[]) || [];
+    const attachments = files.map((f) => `/uploads/${f.filename}`);
+
     const request = await prisma.supportRequest.create({
       data: {
         requestNumber, title, description, issueType,
         urgency: (urgency as Urgency) || Urgency.MEDIUM,
         location: location || null,
         submittedById: req.user!.userId,
+        attachments,
       },
       select: requestSelect,
     });

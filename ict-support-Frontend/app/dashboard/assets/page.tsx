@@ -2,11 +2,11 @@
 import { useState, useEffect } from "react";
 import { api } from "@/lib/api";
 
-const statusColors: Record<string, string> = {
-  ACTIVE: "bg-green-100 text-green-700",
-  UNDER_MAINTENANCE: "bg-yellow-100 text-yellow-700",
-  FAULTY: "bg-red-100 text-red-700",
-  RETIRED: "bg-gray-100 text-gray-500",
+const statusCls: Record<string, string> = {
+  ACTIVE:            "bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-300",
+  UNDER_MAINTENANCE: "bg-yellow-100 text-yellow-700 dark:bg-yellow-900/40 dark:text-yellow-300",
+  FAULTY:            "bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-300",
+  RETIRED:           "bg-gray-100 text-gray-500 dark:bg-gray-700 dark:text-gray-400",
 };
 
 export default function AssetsPage() {

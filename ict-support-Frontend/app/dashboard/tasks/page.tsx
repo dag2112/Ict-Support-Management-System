@@ -48,16 +48,29 @@ export default function TasksPage() {
       <div className="space-y-4">
         {!loading && tasks.length === 0 && <p className="text-gray-400">No tasks assigned to you.</p>}
         {tasks.map((r) => (
-          <div key={r.id} className="bg-white rounded-xl shadow p-5">
+          <div key={r.id} className="bg-white dark:bg-gray-800 rounded-xl shadow p-5 border border-gray-100 dark:border-gray-700">
             <div className="flex items-start justify-between mb-3">
               <div>
-                <span className="font-mono text-blue-700 text-xs">{r.requestNumber}</span>
-                <h3 className="font-semibold text-gray-800 mt-1">{r.title}</h3>
-                <p className="text-sm text-gray-500 mt-1">{r.description}</p>
+                <span className="font-mono text-blue-700 dark:text-blue-400 text-xs">{r.requestNumber}</span>
+                <h3 className="font-semibold text-gray-800 dark:text-white mt-1">{r.title}</h3>
+                <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">{r.description}</p>
                 {r.location && <p className="text-xs text-gray-400 mt-1">📍 {r.location}</p>}
               </div>
               <StatusBadge status={r.status} />
             </div>
+            {r.attachments?.length > 0 && (
+              <div className="mb-3">
+                <p className="text-xs text-gray-400 dark:text-gray-500 mb-2">📎 Attachments:</p>
+                <div className="flex gap-2 flex-wrap">
+                  {r.attachments.map((p: string, i: number) => (
+                    <a key={i} href={`http://localhost:5000${p}`} target="_blank" rel="noopener noreferrer">
+                      <img src={`http://localhost:5000${p}`} alt={`att-${i}`}
+                        className="w-20 h-20 object-cover rounded-lg border border-gray-200 dark:border-gray-600 hover:opacity-80 transition-opacity" />
+                    </a>
+                  ))}
+                </div>
+              </div>
+            )}
             {r.status === "ASSIGNED" && (
               <div className="flex gap-2 flex-wrap mt-4">
                 <button onClick={() => updateStatus(r.id, "FIXED", "Issue resolved successfully.")} disabled={acting === r.id}

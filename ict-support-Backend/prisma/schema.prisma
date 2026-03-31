@@ -67,6 +67,7 @@ model User {
   feedbacks          Feedback[]
   notifications      Notification[]
   auditLogs          AuditLog[]
+  sentMessages       ChatMessage[] @relation("SentMessages")
 }
 
 model SupportRequest {
@@ -93,9 +94,11 @@ model SupportRequest {
   createdAt       DateTime      @default(now())
   updatedAt       DateTime      @updatedAt
 
+  attachments     String[]      // stored file paths
   spareRequests   SpareRequest[]
   feedback        Feedback?
   notifications   Notification[]
+  chatMessages    ChatMessage[]
 }
 
 model SpareRequest {
@@ -169,5 +172,15 @@ model AuditLog {
   userId    String
   user      User     @relation(fields: [userId], references: [id])
 
+  createdAt DateTime @default(now())
+}
+
+model ChatMessage {
+  id        String   @id @default(cuid())
+  message   String
+  requestId String
+  request   SupportRequest @relation(fields: [requestId], references: [id])
+  senderId  String
+  sender    User     @relation("SentMessages", fields: [senderId], references: [id])
   createdAt DateTime @default(now())
 }

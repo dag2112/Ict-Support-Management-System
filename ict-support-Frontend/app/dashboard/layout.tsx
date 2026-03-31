@@ -9,7 +9,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const router = useRouter();
 
   useEffect(() => {
-    if (!loading && !user) router.push("/");
+    if (!loading && !user) router.push("/login");
   }, [user, loading, router]);
 
   if (loading) {
@@ -28,7 +28,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   return (
     <div className="flex min-h-screen">
       <Sidebar />
-      <main className="flex-1 p-8 overflow-auto bg-gray-50">{children}</main>
+      <main className="flex-1 p-8 overflow-auto bg-gray-50 dark:bg-gray-950">{children}</main>
     </div>
   );
 }
