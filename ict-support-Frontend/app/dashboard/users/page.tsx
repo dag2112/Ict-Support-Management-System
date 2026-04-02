@@ -18,6 +18,8 @@ export default function UsersPage() {
   const [form, setForm] = useState({ name: "", email: "", password: "", role: "REQUESTER", department: "" });
   const [acting, setActing] = useState(false);
   const [error, setError] = useState("");
+  const [search, setSearch] = useState("");
+  const [filterRole, setFilterRole] = useState("All");
 
   const fetchUsers = async () => {
     try { setUsers(await api.getUsers()); }
@@ -55,6 +57,18 @@ export default function UsersPage() {
         <button onClick={() => setShowForm(true)} className="bg-blue-900 text-white px-5 py-2 rounded-lg hover:bg-blue-800 text-sm font-medium">+ Add User</button>
       </div>
 
+      <div className="flex gap-3 mb-5">
+        <input type="text" placeholder="Search by name or email..."
+          value={search} onChange={(e) => setSearch(e.target.value)}
+          className="border border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white rounded-lg px-4 py-2 text-sm w-64 focus:outline-none focus:ring-2 focus:ring-blue-500" />
+        <select value={filterRole} onChange={(e) => setFilterRole(e.target.value)}
+          className="border border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+          {["All","REQUESTER","APPROVER","TECHNICIAN","MANAGER","STOREKEEPER","ADMIN"].map((r) => (
+            <option key={r} value={r}>{r === "All" ? "All Roles" : r}</option>
+          ))}
+        </select>
+      </div>
+
       <div className="bg-white dark:bg-gray-800 rounded-xl shadow overflow-hidden border border-gray-100 dark:border-gray-700">
         <table className="w-full text-sm">
           <thead className="bg-gray-50 dark:bg-gray-700 text-gray-500 dark:text-gray-400 uppercase text-xs">
@@ -69,7 +83,11 @@ export default function UsersPage() {
           </thead>
           <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
             {loading && <tr><td colSpan={6} className="px-4 py-8 text-center text-gray-400">Loading...</td></tr>}
-            {users.map((u) => (
+            {users.filter((u) => {
+              const matchSearch = u.name?.toLowerCase().includes(search.toLowerCase()) || u.email?.toLowerCase().includes(search.toLowerCase());
+              const matchRole = filterRole === "All" || u.role === filterRole;
+              return matchSearch && matchRole;
+            }).map((u) => (
               <tr key={u.id} className="hover:bg-gray-50 dark:hover:bg-gray-700/50">
                 <td className="px-4 py-3 font-medium dark:text-gray-200">{u.name}</td>
                 <td className="px-4 py-3 text-gray-500 dark:text-gray-400">{u.email}</td>

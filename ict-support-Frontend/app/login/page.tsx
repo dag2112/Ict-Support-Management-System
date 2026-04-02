@@ -89,7 +89,7 @@ export default function LoginPage() {
         </form>
 
         <div className="mt-6 p-4 bg-gray-50 dark:bg-gray-700/50 rounded-lg text-xs text-gray-500 dark:text-gray-400">
-          <p className="font-semibold mb-3 dark:text-gray-300">Demo accounts:</p>
+          <p className="font-semibold mb-3 dark:text-gray-300"></p>
           <ul className="space-y-2">
             {DEMO_ACCOUNTS.map(({ email: e, password: pw, role }) => (
               <li key={e} onClick={() => { setEmail(e); setPassword(pw); }}
@@ -102,7 +102,7 @@ export default function LoginPage() {
               </li>
             ))}
           </ul>
-          <p className="mt-2 text-gray-400 text-center">Click any account to auto-fill</p>
+          <p className="mt-2 text-gray-400 text-center"></p>
         </div>
       </div>
     </div>

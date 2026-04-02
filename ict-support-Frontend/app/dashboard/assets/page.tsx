@@ -13,9 +13,11 @@ export default function AssetsPage() {
   const [assets, setAssets] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
+  const [editAsset, setEditAsset] = useState<any | null>(null);
   const [form, setForm] = useState({ type: "", model: "", serialNumber: "", location: "", status: "ACTIVE" });
   const [acting, setActing] = useState(false);
   const [error, setError] = useState("");
+  const [search, setSearch] = useState("");
 
   const fetchAssets = async () => {
     try { setAssets(await api.getAssets()); }
@@ -29,24 +31,46 @@ export default function AssetsPage() {
     e.preventDefault();
     setActing(true); setError("");
     try {
-      await api.createAsset(form);
+      if (editAsset) {
+        await api.updateAsset(editAsset.id, { type: form.type, model: form.model, location: form.location, status: form.status });
+      } else {
+        await api.createAsset(form);
+      }
       setForm({ type: "", model: "", serialNumber: "", location: "", status: "ACTIVE" });
-      setShowForm(false);
+      setShowForm(false); setEditAsset(null);
       await fetchAssets();
     } catch (err: any) {
-      setError(err.message || "Failed to add asset");
+      setError(err.message || "Failed to save asset");
     } finally { setActing(false); }
   };
+
+  const openEdit = (a: any) => {
+    setEditAsset(a);
+    setForm({ type: a.type, model: a.model, serialNumber: a.serialNumber, location: a.location, status: a.status });
+    setShowForm(true);
+  };
+
+  const filtered = assets.filter((a) =>
+    a.assetNumber?.toLowerCase().includes(search.toLowerCase()) ||
+    a.type?.toLowerCase().includes(search.toLowerCase()) ||
+    a.model?.toLowerCase().includes(search.toLowerCase()) ||
+    a.location?.toLowerCase().includes(search.toLowerCase()) ||
+    a.serialNumber?.toLowerCase().includes(search.toLowerCase())
+  );
 
   return (
     <div>
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-2xl font-bold dark:text-white">Asset Management</h1>
-        <button onClick={() => setShowForm(true)}
+        <button onClick={() => { setEditAsset(null); setForm({ type: "", model: "", serialNumber: "", location: "", status: "ACTIVE" }); setShowForm(true); }}
           className="bg-blue-900 text-white px-5 py-2 rounded-lg hover:bg-blue-800 text-sm font-medium">
           + Add Asset
         </button>
       </div>
+
+      <input type="text" placeholder="Search by ID, type, model, location..."
+        value={search} onChange={(e) => setSearch(e.target.value)}
+        className="border border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white rounded-lg px-4 py-2 text-sm w-80 mb-5 focus:outline-none focus:ring-2 focus:ring-blue-500" />
 
       <div className="bg-white dark:bg-gray-800 rounded-xl shadow overflow-hidden border border-gray-100 dark:border-gray-700">
         <table className="w-full text-sm">
@@ -58,12 +82,13 @@ export default function AssetsPage() {
               <th className="px-4 py-3 text-left">Serial No.</th>
               <th className="px-4 py-3 text-left">Location</th>
               <th className="px-4 py-3 text-left">Status</th>
+              <th className="px-4 py-3 text-left">Action</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
-            {loading && <tr><td colSpan={6} className="px-4 py-8 text-center text-gray-400">Loading...</td></tr>}
-            {!loading && assets.length === 0 && <tr><td colSpan={6} className="px-4 py-8 text-center text-gray-400">No assets found.</td></tr>}
-            {assets.map((a) => (
+            {loading && <tr><td colSpan={7} className="px-4 py-8 text-center text-gray-400">Loading...</td></tr>}
+            {!loading && filtered.length === 0 && <tr><td colSpan={7} className="px-4 py-8 text-center text-gray-400">No assets found.</td></tr>}
+            {filtered.map((a) => (
               <tr key={a.id} className="hover:bg-gray-50 dark:hover:bg-gray-700/50">
                 <td className="px-4 py-3 font-mono text-blue-700 dark:text-blue-400 text-xs">{a.assetNumber}</td>
                 <td className="px-4 py-3 font-medium dark:text-gray-200">{a.type}</td>
@@ -75,6 +100,9 @@ export default function AssetsPage() {
                     {a.status.replace("_", " ")}
                   </span>
                 </td>
+                <td className="px-4 py-3">
+                  <button onClick={() => openEdit(a)} className="text-xs text-blue-600 dark:text-blue-400 hover:underline">Edit</button>
+                </td>
               </tr>
             ))}
           </tbody>
@@ -84,7 +112,7 @@ export default function AssetsPage() {
       {showForm && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
           <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl w-full max-w-md p-6">
-            <h2 className="text-lg font-bold mb-4 dark:text-white">Add New Asset</h2>
+            <h2 className="text-lg font-bold mb-4 dark:text-white">{editAsset ? "Edit Asset" : "Add New Asset"}</h2>
             <form onSubmit={addAsset} className="space-y-4">
               {[
                 { label: "Type", key: "type", placeholder: "e.g. Laptop, Printer" },
@@ -114,9 +142,9 @@ export default function AssetsPage() {
               <div className="flex gap-3">
                 <button type="submit" disabled={acting}
                   className="flex-1 bg-blue-900 text-white py-2 rounded-lg hover:bg-blue-800 text-sm font-medium disabled:opacity-60">
-                  {acting ? "Adding..." : "Add Asset"}
+                  {acting ? "Saving..." : editAsset ? "Save Changes" : "Add Asset"}
                 </button>
-                <button type="button" onClick={() => setShowForm(false)}
+                <button type="button" onClick={() => { setShowForm(false); setEditAsset(null); }}
                   className="flex-1 border border-gray-300 dark:border-gray-600 dark:text-gray-300 py-2 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 text-sm">
                   Cancel
                 </button>

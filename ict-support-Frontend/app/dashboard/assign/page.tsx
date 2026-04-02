@@ -9,6 +9,7 @@ export default function AssignPage() {
   const [selected, setSelected] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(true);
   const [acting, setActing] = useState<string | null>(null);
+  const [search, setSearch] = useState("");
 
   useEffect(() => {
     Promise.all([api.getRequests({ status: "APPROVED" }), api.getTechnicians()])
@@ -28,13 +29,23 @@ export default function AssignPage() {
     finally { setActing(null); }
   };
 
+  const filtered = requests.filter((r) =>
+    r.title?.toLowerCase().includes(search.toLowerCase()) ||
+    r.requestNumber?.toLowerCase().includes(search.toLowerCase()) ||
+    r.submittedBy?.name?.toLowerCase().includes(search.toLowerCase()) ||
+    r.issueType?.toLowerCase().includes(search.toLowerCase())
+  );
+
   return (
     <div>
       <h1 className="text-2xl font-bold mb-6 dark:text-white">Assign Technician</h1>
+      <input type="text" placeholder="Search by title, ID, submitter, type..."
+        value={search} onChange={(e) => setSearch(e.target.value)}
+        className="border border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white rounded-lg px-4 py-2 text-sm w-80 mb-5 focus:outline-none focus:ring-2 focus:ring-blue-500" />
       {loading && <p className="text-gray-400">Loading...</p>}
       <div className="space-y-4">
-        {!loading && requests.length === 0 && <p className="text-gray-400">No approved requests awaiting assignment.</p>}
-        {requests.map((r) => (
+        {!loading && filtered.length === 0 && <p className="text-gray-400">No approved requests awaiting assignment.</p>}
+        {filtered.map((r) => (
           <div key={r.id} className="bg-white dark:bg-gray-800 rounded-xl shadow p-5 flex items-center justify-between gap-4 border border-gray-100 dark:border-gray-700">
             <div className="flex-1">
               <div className="flex items-center gap-3 mb-1">

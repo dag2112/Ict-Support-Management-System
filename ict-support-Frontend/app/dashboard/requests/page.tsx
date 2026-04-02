@@ -25,6 +25,11 @@ export default function MyRequestsPage() {
     finally { setLoading(false); }
   };
 
+  const escalate = async (id: string) => {
+    try { await api.escalateRequest(id); await fetchRequests(); }
+    catch (e) { console.error(e); }
+  };
+
   useEffect(() => { fetchRequests(); }, [search, filterStatus]);
 
   return (
@@ -74,12 +79,15 @@ export default function MyRequestsPage() {
                 </td>
                 <td className="px-4 py-3"><StatusBadge status={r.status} /></td>
                 <td className="px-4 py-3 text-gray-400 text-xs">{new Date(r.createdAt).toLocaleDateString()}</td>
-                <td className="px-4 py-3 flex gap-2">
+                <td className="px-4 py-3">
                   <button onClick={() => setViewRequest(r)} className="text-xs text-blue-600 dark:text-blue-400 hover:underline">View</button>
                   {r.status === "FIXED" && !r.feedback && (
-                    <button onClick={() => setFeedbackRequest(r)} className="text-xs bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300 px-3 py-1 rounded-full hover:bg-blue-200">Feedback</button>
+                    <button onClick={() => setFeedbackRequest(r)} className="ml-2 text-xs bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300 px-3 py-1 rounded-full hover:bg-blue-200">Feedback</button>
                   )}
-                  {r.feedback && <span className="text-xs text-gray-400">✓ Rated</span>}
+                  {r.feedback && <span className="ml-2 text-xs text-gray-400">✓ Rated</span>}
+                  {(r.status === "ASSIGNED" || r.status === "PENDING" || r.status === "APPROVED") && (
+                    <button onClick={() => escalate(r.id)} className="ml-2 text-xs bg-orange-100 dark:bg-orange-900/40 text-orange-700 dark:text-orange-300 px-3 py-1 rounded-full hover:bg-orange-200">Escalate</button>
+                  )}
                 </td>
               </tr>
             ))}

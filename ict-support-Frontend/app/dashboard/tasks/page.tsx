@@ -9,6 +9,8 @@ export default function TasksPage() {
   const [spareModal, setSpareModal] = useState<any | null>(null);
   const [spareName, setSpareName] = useState("");
   const [acting, setActing] = useState<string | null>(null);
+  const [search, setSearch] = useState("");
+  const [filterStatus, setFilterStatus] = useState("All");
 
   const fetchTasks = async () => {
     try {
@@ -44,10 +46,29 @@ export default function TasksPage() {
   return (
     <div>
       <h1 className="text-2xl font-bold mb-6">Assigned Tasks</h1>
+      <div className="flex gap-3 mb-5">
+        <input type="text" placeholder="Search by title, ID..."
+          value={search} onChange={(e) => setSearch(e.target.value)}
+          className="border border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white rounded-lg px-4 py-2 text-sm w-64 focus:outline-none focus:ring-2 focus:ring-blue-500" />
+        <select value={filterStatus} onChange={(e) => setFilterStatus(e.target.value)}
+          className="border border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+          {["All","ASSIGNED","FIXED","ESCALATED","NEED_SPARE"].map((s) => (
+            <option key={s} value={s}>{s === "All" ? "All" : s.replace("_"," ")}</option>
+          ))}
+        </select>
+      </div>
       {loading && <p className="text-gray-400">Loading...</p>}
       <div className="space-y-4">
-        {!loading && tasks.length === 0 && <p className="text-gray-400">No tasks assigned to you.</p>}
-        {tasks.map((r) => (
+        {!loading && tasks.filter((r) => {
+          const matchSearch = r.title?.toLowerCase().includes(search.toLowerCase()) || r.requestNumber?.toLowerCase().includes(search.toLowerCase());
+          const matchStatus = filterStatus === "All" || r.status === filterStatus;
+          return matchSearch && matchStatus;
+        }).length === 0 && <p className="text-gray-400">No tasks found.</p>}
+        {tasks.filter((r) => {
+          const matchSearch = r.title?.toLowerCase().includes(search.toLowerCase()) || r.requestNumber?.toLowerCase().includes(search.toLowerCase());
+          const matchStatus = filterStatus === "All" || r.status === filterStatus;
+          return matchSearch && matchStatus;
+        }).map((r) => (
           <div key={r.id} className="bg-white dark:bg-gray-800 rounded-xl shadow p-5 border border-gray-100 dark:border-gray-700">
             <div className="flex items-start justify-between mb-3">
               <div>
