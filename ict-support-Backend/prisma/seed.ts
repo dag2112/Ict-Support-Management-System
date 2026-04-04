@@ -7,12 +7,11 @@ async function main() {
   console.log("Seeding database...");
 
   const userData = [
-    { name: "Abebe Kebede",  email: "abebe@woldia.edu.et", password: "Abebe@1234",   role: Role.REQUESTER,   department: "Engineering" },
-    { name: "Tigist Haile",  email: "tigist@woldia.edu.et", password: "Tigist@1234",  role: Role.APPROVER,    department: "Administration" },
-    { name: "Yonas Tesfaye", email: "yonas@woldia.edu.et",  password: "Yonas@1234",   role: Role.TECHNICIAN,  department: "ICT" },
-    { name: "Meron Alemu",   email: "meron@woldia.edu.et",  password: "Meron@1234",   role: Role.MANAGER,     department: "ICT" },
-    { name: "Dawit Girma",   email: "dawit@woldia.edu.et",  password: "Dawit@1234",   role: Role.STOREKEEPER, department: "Store" },
-    { name: "Admin User",    email: "admin@woldia.edu.et",  password: "Admin@1234",   role: Role.ADMIN,       department: "ICT" },
+    { name: "Abebe Kebede",  email: "abebe@woldia.edu.et",  password: "Abebe@1234",  role: Role.REQUESTER,   department: "Engineering" },
+    { name: "Yonas Tesfaye", email: "yonas@woldia.edu.et",  password: "Yonas@1234",  role: Role.TECHNICIAN,  department: "ICT" },
+    { name: "Meron Alemu",   email: "meron@woldia.edu.et",  password: "Meron@1234",  role: Role.MANAGER,     department: "ICT" },
+    { name: "Dawit Girma",   email: "dawit@woldia.edu.et",  password: "Dawit@1234",  role: Role.STOREKEEPER, department: "Store" },
+    { name: "Admin User",    email: "admin@woldia.edu.et",  password: "Admin@1234",  role: Role.ADMIN,       department: "ICT" },
   ];
 
   const users = await Promise.all(
@@ -20,15 +19,14 @@ async function main() {
       const hashed = await bcrypt.hash(u.password, 10);
       return prisma.user.upsert({
         where: { email: u.email },
-        update: { password: hashed },
+        update: { password: hashed, role: u.role },
         create: { ...u, password: hashed },
       });
     })
   );
 
-  const [requester, , technician] = users;
+  const [requester, technician, manager] = users;
 
-  // Sample requests
   const req1 = await prisma.supportRequest.upsert({
     where: { requestNumber: "REQ-001" },
     update: {},
@@ -41,6 +39,7 @@ async function main() {
       status: RequestStatus.ASSIGNED,
       submittedById: requester.id,
       assignedToId: technician.id,
+      approvedById: manager.id,
       location: "Admin Block",
     },
   });
@@ -72,30 +71,17 @@ async function main() {
       status: RequestStatus.FIXED,
       submittedById: requester.id,
       assignedToId: technician.id,
+      approvedById: manager.id,
       resolutionNote: "Replaced printer cable and updated driver.",
       location: "Office 101",
     },
   });
 
-  // Spare request
-  await prisma.spareRequest.upsert({
-    where: { id: "spare-001" },
-    update: {},
-    create: {
-      id: "spare-001",
-      spareName: "Laptop Screen 15.6 inch",
-      quantity: 1,
-      requestId: req1.id,
-      requestedById: technician.id,
-    },
-  });
-
-  // Assets
   const assetData = [
-    { assetNumber: "AST-001", type: "Laptop", model: "Dell Latitude 5520", serialNumber: "DL5520-001", location: "Admin Block", status: AssetStatus.ACTIVE },
-    { assetNumber: "AST-002", type: "Printer", model: "HP LaserJet Pro", serialNumber: "HPLJ-002", location: "Library", status: AssetStatus.UNDER_MAINTENANCE },
-    { assetNumber: "AST-003", type: "Server", model: "Dell PowerEdge R740", serialNumber: "DPER740-001", location: "Server Room", status: AssetStatus.ACTIVE },
-    { assetNumber: "AST-004", type: "Desktop", model: "HP EliteDesk 800", serialNumber: "HPED-004", location: "Lab 1", status: AssetStatus.FAULTY },
+    { assetNumber: "AST-001", type: "Laptop",  model: "Dell Latitude 5520",  serialNumber: "DL5520-001",   location: "Admin Block",  status: AssetStatus.ACTIVE },
+    { assetNumber: "AST-002", type: "Printer", model: "HP LaserJet Pro",     serialNumber: "HPLJ-002",     location: "Library",      status: AssetStatus.UNDER_MAINTENANCE },
+    { assetNumber: "AST-003", type: "Server",  model: "Dell PowerEdge R740", serialNumber: "DPER740-001",  location: "Server Room",  status: AssetStatus.ACTIVE },
+    { assetNumber: "AST-004", type: "Desktop", model: "HP EliteDesk 800",    serialNumber: "HPED-004",     location: "Lab 1",        status: AssetStatus.FAULTY },
   ];
 
   for (const asset of assetData) {
@@ -107,13 +93,12 @@ async function main() {
   }
 
   console.log("Seeding complete.");
-  console.log("Passwords:");
-  console.log("  abebe@woldia.edu.et  → Abebe@1234");
-  console.log("  tigist@woldia.edu.et → Tigist@1234");
-  console.log("  yonas@woldia.edu.et  → Yonas@1234");
-  console.log("  meron@woldia.edu.et  → Meron@1234");
-  console.log("  dawit@woldia.edu.et  → Dawit@1234");
-  console.log("  admin@woldia.edu.et  → Admin@1234");
+  console.log("Accounts:");
+  console.log("  abebe@woldia.edu.et  → Abebe@1234  (Requester)");
+  console.log("  yonas@woldia.edu.et  → Yonas@1234  (Technician)");
+  console.log("  meron@woldia.edu.et  → Meron@1234  (Manager)");
+  console.log("  dawit@woldia.edu.et  → Dawit@1234  (Store Keeper)");
+  console.log("  admin@woldia.edu.et  → Admin@1234  (Admin)");
 }
 
 main()

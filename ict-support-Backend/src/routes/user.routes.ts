@@ -3,6 +3,7 @@ import bcrypt from "bcryptjs";
 import { prisma } from "../lib/prisma";
 import { authenticate, authorize, AuthRequest } from "../middleware/auth";
 import { Role } from "@prisma/client";
+// Valid roles: REQUESTER, TECHNICIAN, MANAGER, STOREKEEPER, ADMIN
 
 const router = Router();
 router.use(authenticate);

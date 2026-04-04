@@ -11,24 +11,20 @@ const navItems: Record<string, { label: string; href: string; icon: string }[]> 
     { label: "Submit Request",href: "/dashboard/submit",   icon: "➕" },
     { label: "My Requests",   href: "/dashboard/requests", icon: "📋" },
   ],
-  APPROVER: [
-    { label: "Dashboard",         href: "/dashboard",         icon: "🏠" },
-    { label: "Pending Requests",  href: "/dashboard/approve", icon: "✅" },
-  ],
   TECHNICIAN: [
     { label: "Dashboard",     href: "/dashboard",       icon: "🏠" },
     { label: "Assigned Tasks",href: "/dashboard/tasks", icon: "🔧" },
   ],
   MANAGER: [
     { label: "Dashboard",        href: "/dashboard",         icon: "🏠" },
+    { label: "Pending Requests", href: "/dashboard/approve", icon: "✅" },
     { label: "Assign Technician",href: "/dashboard/assign",  icon: "👤" },
-    { label: "Spare Requests",   href: "/dashboard/spares",  icon: "🔩" },
     { label: "Reports",          href: "/dashboard/reports", icon: "📊" },
     { label: "Users",            href: "/dashboard/users",   icon: "👥" },
   ],
   STOREKEEPER: [
-    { label: "Dashboard",     href: "/dashboard",      icon: "🏠" },
-    { label: "Spare Requests",href: "/dashboard/store",icon: "📦" },
+    { label: "Dashboard",href: "/dashboard",        icon: "🏠" },
+    { label: "Assets",   href: "/dashboard/assets", icon: "💻" },
   ],
   ADMIN: [
     { label: "Dashboard",   href: "/dashboard",        icon: "🏠" },

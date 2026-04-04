@@ -57,12 +57,11 @@ router.get("/:id", async (req: AuthRequest, res: Response) => {
   try {
     const request = await prisma.supportRequest.findUnique({
       where: { id: req.params.id },
-      select: { ...requestSelect, spareRequests: true },
+      select: requestSelect,
     });
     if (!request) return res.status(404).json({ message: "Request not found" });
     res.json(request);
   } catch (err: any) {
-    console.error("[GET /requests/:id]", err?.message);
     res.status(500).json({ message: err?.message || "Server error" });
   }
 });
@@ -76,8 +75,6 @@ router.post("/", authorize("REQUESTER"), upload.array("attachments", 3), async (
 
     const count = await prisma.supportRequest.count();
     const requestNumber = `REQ-${String(count + 1).padStart(4, "0")}`;
-
-    // Build attachment paths
     const files = (req.files as Express.Multer.File[]) || [];
     const attachments = files.map((f) => `/uploads/${f.filename}`);
 
@@ -92,29 +89,21 @@ router.post("/", authorize("REQUESTER"), upload.array("attachments", 3), async (
       select: requestSelect,
     });
 
-    // Notify approvers using Role enum
-    const approvers = await prisma.user.findMany({ where: { role: Role.APPROVER, isActive: true } });
-    for (const approver of approvers) {
+    // Notify managers (they now approve)
+    const managers = await prisma.user.findMany({ where: { role: Role.MANAGER, isActive: true } });
+    for (const manager of managers) {
       await prisma.notification.create({
-        data: {
-          title: "New Request Pending Approval",
-          message: `Request ${requestNumber} needs your review.`,
-          userId: approver.id,
-          requestId: request.id,
-        },
+        data: { title: "New Request Pending Approval", message: `Request ${requestNumber} needs your review.`, userId: manager.id, requestId: request.id },
       });
     }
 
-    // Email submitter (non-blocking — don't fail if email fails)
     try {
       const submitter = await prisma.user.findUnique({ where: { id: req.user!.userId } });
       if (submitter) {
         const { subject, html } = emailTemplates.requestSubmitted(submitter.name, requestNumber);
         await sendEmail(submitter.email, subject, html);
       }
-    } catch (emailErr: any) {
-      console.warn("[Email] Failed to send:", emailErr?.message);
-    }
+    } catch (emailErr: any) { console.warn("[Email]", emailErr?.message); }
 
     res.status(201).json(request);
   } catch (err: any) {
@@ -123,8 +112,8 @@ router.post("/", authorize("REQUESTER"), upload.array("attachments", 3), async (
   }
 });
 
-// PUT /api/requests/:id/approve — Approver
-router.put("/:id/approve", authorize("APPROVER"), async (req: AuthRequest, res: Response) => {
+// PUT /api/requests/:id/approve — Manager approves
+router.put("/:id/approve", authorize("MANAGER"), async (req: AuthRequest, res: Response) => {
   try {
     const request = await prisma.supportRequest.findUnique({ where: { id: req.params.id }, include: { submittedBy: true } });
     if (!request) return res.status(404).json({ message: "Request not found" });
@@ -153,8 +142,8 @@ router.put("/:id/approve", authorize("APPROVER"), async (req: AuthRequest, res: 
   }
 });
 
-// PUT /api/requests/:id/reject — Approver
-router.put("/:id/reject", authorize("APPROVER"), async (req: AuthRequest, res: Response) => {
+// PUT /api/requests/:id/reject — Manager rejects
+router.put("/:id/reject", authorize("MANAGER"), async (req: AuthRequest, res: Response) => {
   try {
     const { rejectionReason } = req.body;
     if (!rejectionReason) return res.status(400).json({ message: "Rejection reason is required" });
@@ -186,7 +175,7 @@ router.put("/:id/reject", authorize("APPROVER"), async (req: AuthRequest, res: R
   }
 });
 
-// PUT /api/requests/:id/assign — Manager
+// PUT /api/requests/:id/assign — Manager assigns technician
 router.put("/:id/assign", authorize("MANAGER"), async (req: AuthRequest, res: Response) => {
   try {
     const { technicianId } = req.body;
@@ -226,9 +215,9 @@ router.put("/:id/assign", authorize("MANAGER"), async (req: AuthRequest, res: Re
 router.put("/:id/status", authorize("TECHNICIAN"), async (req: AuthRequest, res: Response) => {
   try {
     const { status, resolutionNote } = req.body;
-    const allowed: RequestStatus[] = [RequestStatus.FIXED, RequestStatus.ESCALATED, RequestStatus.NEED_SPARE];
+    const allowed: RequestStatus[] = [RequestStatus.FIXED, RequestStatus.ESCALATED];
     if (!allowed.includes(status))
-      return res.status(400).json({ message: "Invalid status. Use FIXED, ESCALATED, or NEED_SPARE" });
+      return res.status(400).json({ message: "Invalid status. Use FIXED or ESCALATED" });
 
     const request = await prisma.supportRequest.findUnique({ where: { id: req.params.id }, include: { submittedBy: true } });
     if (!request) return res.status(404).json({ message: "Request not found" });
@@ -251,6 +240,15 @@ router.put("/:id/status", authorize("TECHNICIAN"), async (req: AuthRequest, res:
       } catch (emailErr: any) { console.warn("[Email]", emailErr?.message); }
     }
 
+    if (status === RequestStatus.ESCALATED) {
+      const managers = await prisma.user.findMany({ where: { role: Role.MANAGER, isActive: true } });
+      for (const manager of managers) {
+        await prisma.notification.create({
+          data: { title: "Request Escalated", message: `Request ${request.requestNumber} has been escalated.`, userId: manager.id, requestId: request.id },
+        });
+      }
+    }
+
     res.json(updated);
   } catch (err: any) {
     console.error("[PUT /status]", err?.message);
@@ -258,8 +256,8 @@ router.put("/:id/status", authorize("TECHNICIAN"), async (req: AuthRequest, res:
   }
 });
 
-// PUT /api/requests/:id/escalate — Requester or Technician
-router.put("/:id/escalate", authorize("REQUESTER", "TECHNICIAN"), async (req: AuthRequest, res: Response) => {
+// PUT /api/requests/:id/escalate — Requester escalates
+router.put("/:id/escalate", authorize("REQUESTER"), async (req: AuthRequest, res: Response) => {
   try {
     const request = await prisma.supportRequest.findUnique({ where: { id: req.params.id } });
     if (!request) return res.status(404).json({ message: "Request not found" });
@@ -273,7 +271,7 @@ router.put("/:id/escalate", authorize("REQUESTER", "TECHNICIAN"), async (req: Au
     const managers = await prisma.user.findMany({ where: { role: Role.MANAGER, isActive: true } });
     for (const manager of managers) {
       await prisma.notification.create({
-        data: { title: "Request Escalated", message: `Request ${request.requestNumber} has been escalated.`, userId: manager.id, requestId: request.id },
+        data: { title: "Request Escalated", message: `Request ${request.requestNumber} has been escalated by the requester.`, userId: manager.id, requestId: request.id },
       });
     }
 

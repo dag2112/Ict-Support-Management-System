@@ -64,17 +64,6 @@ export const api = {
   deleteUser: (id: string) =>
     request<any>(`/users/${id}`, { method: "DELETE" }),
 
-  // Spares
-  getSpares: () => request<any[]>("/spares"),
-  createSpare: (data: any) =>
-    request<any>("/spares", { method: "POST", body: JSON.stringify(data) }),
-  approveSpare: (id: string) =>
-    request<any>(`/spares/${id}/approve`, { method: "PUT" }),
-  allocateSpare: (id: string) =>
-    request<any>(`/spares/${id}/allocate`, { method: "PUT" }),
-  purchaseSpare: (id: string) =>
-    request<any>(`/spares/${id}/purchase`, { method: "PUT" }),
-
   // Feedback
   submitFeedback: (data: any) =>
     request<any>("/feedback", { method: "POST", body: JSON.stringify(data) }),
