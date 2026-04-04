@@ -1,24 +1,61 @@
 "use client";
 import { useState, useEffect, useRef } from "react";
 import { api } from "@/lib/api";
+import { useAuth } from "@/context/AuthContext";
+import { io } from "socket.io-client";
+
+const SOCKET_URL = process.env.NEXT_PUBLIC_API_URL?.replace("/api", "") || "http://localhost:5000";
+
+const getIcon = (title: string) => {
+  if (title.includes("Assigned")) return "🔧";
+  if (title.includes("Approved")) return "✅";
+  if (title.includes("Rejected")) return "❌";
+  if (title.includes("Fixed")) return "🎉";
+  if (title.includes("Escalated")) return "⚠️";
+  if (title.includes("Spare")) return "🔩";
+  return "🔔";
+};
 
 export default function NotificationBell() {
+  const { user } = useAuth();
   const [notifications, setNotifications] = useState<any[]>([]);
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
 
-  const fetchNotifications = async () => {
-    try {
-      const data = await api.getNotifications();
-      setNotifications(data);
-    } catch {}
-  };
-
-  // Poll every 15 seconds for new notifications
+  // Load existing notifications on mount
   useEffect(() => {
-    fetchNotifications();
-    const interval = setInterval(fetchNotifications, 15000);
-    return () => clearInterval(interval);
+    if (!user) return;
+    api.getNotifications().then(setNotifications).catch(() => {});
+  }, [user]);
+
+  // Real-time socket connection
+  useEffect(() => {
+    if (!user) return;
+
+    const socket = io(SOCKET_URL, { transports: ["websocket"] });
+
+    socket.on("connect", () => {
+      socket.emit("join", user.id);
+    });
+
+    // When a new notification arrives, prepend it and show a browser notification if supported
+    socket.on("notification", (notif: any) => {
+      setNotifications((prev) => [notif, ...prev]);
+
+      // Browser notification (if permission granted)
+      if (typeof window !== "undefined" && "Notification" in window && Notification.permission === "granted") {
+        new Notification(notif.title, { body: notif.message, icon: "/favicon.ico" });
+      }
+    });
+
+    return () => { socket.disconnect(); };
+  }, [user]);
+
+  // Request browser notification permission
+  useEffect(() => {
+    if (typeof window !== "undefined" && "Notification" in window && Notification.permission === "default") {
+      Notification.requestPermission();
+    }
   }, []);
 
   // Close dropdown on outside click
@@ -46,23 +83,12 @@ export default function NotificationBell() {
     } catch {}
   };
 
-  const getIcon = (title: string) => {
-    if (title.includes("Assigned")) return "🔧";
-    if (title.includes("Approved")) return "✅";
-    if (title.includes("Rejected")) return "❌";
-    if (title.includes("Fixed")) return "🎉";
-    if (title.includes("Escalated")) return "⚠️";
-    if (title.includes("Spare")) return "🔩";
-    return "🔔";
-  };
-
   return (
     <div className="relative flex-1" ref={ref}>
       {/* Bell button */}
       <button
         onClick={() => setOpen((o) => !o)}
         className="relative flex items-center gap-2 w-full px-3 py-1.5 rounded-lg hover:bg-blue-800 dark:hover:bg-gray-700 transition-colors text-sm"
-        title="Notifications"
       >
         <span className="text-lg">🔔</span>
         <span className="text-blue-100 dark:text-gray-300">Notifications</span>
@@ -76,7 +102,6 @@ export default function NotificationBell() {
       {/* Dropdown — opens to the right of the sidebar */}
       {open && (
         <div className="fixed left-64 bottom-24 w-80 bg-white dark:bg-gray-800 rounded-xl shadow-2xl border border-gray-100 dark:border-gray-700 z-50">
-          {/* Header */}
           <div className="flex items-center justify-between px-4 py-3 border-b border-gray-100 dark:border-gray-700">
             <div className="flex items-center gap-2">
               <h3 className="font-semibold text-sm text-gray-800 dark:text-white">Notifications</h3>
@@ -93,7 +118,6 @@ export default function NotificationBell() {
             )}
           </div>
 
-          {/* List */}
           <div className="max-h-96 overflow-y-auto divide-y divide-gray-100 dark:divide-gray-700">
             {notifications.length === 0 && (
               <div className="text-center py-10">
@@ -102,9 +126,7 @@ export default function NotificationBell() {
               </div>
             )}
             {notifications.map((n) => (
-              <div
-                key={n.id}
-                onClick={() => !n.isRead && markRead(n.id)}
+              <div key={n.id} onClick={() => !n.isRead && markRead(n.id)}
                 className={`px-4 py-3 transition-colors ${
                   !n.isRead
                     ? "bg-blue-50 dark:bg-blue-900/20 cursor-pointer hover:bg-blue-100 dark:hover:bg-blue-900/30"
@@ -122,15 +144,12 @@ export default function NotificationBell() {
                       {new Date(n.createdAt).toLocaleString()}
                     </p>
                   </div>
-                  {!n.isRead && (
-                    <span className="w-2 h-2 bg-blue-500 rounded-full mt-1.5 flex-shrink-0" />
-                  )}
+                  {!n.isRead && <span className="w-2 h-2 bg-blue-500 rounded-full mt-1.5 flex-shrink-0" />}
                 </div>
               </div>
             ))}
           </div>
 
-          {/* Footer */}
           {notifications.length > 0 && (
             <div className="px-4 py-2 border-t border-gray-100 dark:border-gray-700 text-center">
               <a href="/dashboard/notifications" className="text-xs text-blue-600 dark:text-blue-400 hover:underline">

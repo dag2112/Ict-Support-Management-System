@@ -2,6 +2,8 @@ import "dotenv/config";
 import express from "express";
 import cors from "cors";
 import path from "path";
+import http from "http";
+import { Server as SocketServer } from "socket.io";
 import { errorHandler, notFound } from "./middleware/errorHandler";
 
 import authRoutes from "./routes/auth.routes";
@@ -13,7 +15,22 @@ import notificationRoutes from "./routes/notification.routes";
 import reportRoutes from "./routes/report.routes";
 
 const app = express();
+const httpServer = http.createServer(app);
 const PORT = process.env.PORT || 5000;
+
+// Socket.io setup
+export const io = new SocketServer(httpServer, {
+  cors: { origin: process.env.CLIENT_URL || "http://localhost:3000", credentials: true },
+});
+
+io.on("connection", (socket) => {
+  // Each user joins their own room by userId
+  socket.on("join", (userId: string) => {
+    socket.join(userId);
+  });
+
+  socket.on("disconnect", () => {});
+});
 
 app.use(cors({ origin: process.env.CLIENT_URL || "http://localhost:3000", credentials: true }));
 app.use(express.json());
@@ -33,7 +50,7 @@ app.use("/api/reports", reportRoutes);
 app.use(notFound);
 app.use(errorHandler);
 
-app.listen(PORT, () => {
+httpServer.listen(PORT, () => {
   console.log(`✅ ICT Support API running on http://localhost:${PORT}`);
 });
 

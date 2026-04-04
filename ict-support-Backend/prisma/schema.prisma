@@ -11,7 +11,6 @@ enum Role {
   REQUESTER
   TECHNICIAN
   MANAGER
-  STOREKEEPER
   ADMIN
 }
 
@@ -22,6 +21,7 @@ enum RequestStatus {
   ASSIGNED
   FIXED
   ESCALATED
+  NEED_SPARE
 }
 
 enum Urgency {

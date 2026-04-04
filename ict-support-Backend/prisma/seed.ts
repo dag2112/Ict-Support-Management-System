@@ -7,11 +7,10 @@ async function main() {
   console.log("Seeding database...");
 
   const userData = [
-    { name: "Abebe Kebede",  email: "abebe@woldia.edu.et",  password: "Abebe@1234",  role: Role.REQUESTER,   department: "Engineering" },
-    { name: "Yonas Tesfaye", email: "yonas@woldia.edu.et",  password: "Yonas@1234",  role: Role.TECHNICIAN,  department: "ICT" },
-    { name: "Meron Alemu",   email: "meron@woldia.edu.et",  password: "Meron@1234",  role: Role.MANAGER,     department: "ICT" },
-    { name: "Dawit Girma",   email: "dawit@woldia.edu.et",  password: "Dawit@1234",  role: Role.STOREKEEPER, department: "Store" },
-    { name: "Admin User",    email: "admin@woldia.edu.et",  password: "Admin@1234",  role: Role.ADMIN,       department: "ICT" },
+    { name: "Abebe Kebede",  email: "abebe@woldia.edu.et",  password: "Abebe@1234",  role: Role.REQUESTER,  department: "Engineering" },
+    { name: "Yonas Tesfaye", email: "yonas@woldia.edu.et",  password: "Yonas@1234",  role: Role.TECHNICIAN, department: "ICT" },
+    { name: "Meron Alemu",   email: "meron@woldia.edu.et",  password: "Meron@1234",  role: Role.MANAGER,    department: "ICT" },
+    { name: "Admin User",    email: "admin@woldia.edu.et",  password: "Admin@1234",  role: Role.ADMIN,      department: "ICT" },
   ];
 
   const users = await Promise.all(
@@ -97,7 +96,6 @@ async function main() {
   console.log("  abebe@woldia.edu.et  → Abebe@1234  (Requester)");
   console.log("  yonas@woldia.edu.et  → Yonas@1234  (Technician)");
   console.log("  meron@woldia.edu.et  → Meron@1234  (Manager)");
-  console.log("  dawit@woldia.edu.et  → Dawit@1234  (Store Keeper)");
   console.log("  admin@woldia.edu.et  → Admin@1234  (Admin)");
 }
 

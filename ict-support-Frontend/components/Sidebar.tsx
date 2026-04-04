@@ -21,10 +21,7 @@ const navItems: Record<string, { label: string; href: string; icon: string }[]> 
     { label: "Assign Technician",href: "/dashboard/assign",  icon: "👤" },
     { label: "Reports",          href: "/dashboard/reports", icon: "📊" },
     { label: "Users",            href: "/dashboard/users",   icon: "👥" },
-  ],
-  STOREKEEPER: [
-    { label: "Dashboard",href: "/dashboard",        icon: "🏠" },
-    { label: "Assets",   href: "/dashboard/assets", icon: "💻" },
+    { label: "Assets",           href: "/dashboard/assets",  icon: "💻" },
   ],
   ADMIN: [
     { label: "Dashboard",   href: "/dashboard",        icon: "🏠" },
