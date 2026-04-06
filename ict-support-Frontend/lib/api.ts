@@ -83,6 +83,8 @@ export const api = {
     request<any>(`/assets/${id}`, { method: "PUT", body: JSON.stringify(data) }),
   deleteAsset: (id: string) =>
     request<any>(`/assets/${id}`, { method: "DELETE" }),
+  getAssetHistory: (id: string) =>
+    request<any[]>(`/assets/${id}/history`),
 
   // Chat
   getChatMessages: (requestId: string) => request<any[]>(`/chat/${requestId}`),

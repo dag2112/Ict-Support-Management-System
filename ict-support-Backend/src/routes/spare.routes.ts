@@ -22,8 +22,9 @@ router.get("/", authorize("TECHNICIAN", "MANAGER", "STOREKEEPER", "ADMIN"), asyn
       orderBy: { createdAt: "desc" },
     });
     res.json(spares);
-  } catch {
-    res.status(500).json({ message: "Server error" });
+  } catch (err: any) {
+    console.error("[GET /spares]", err?.message);
+    res.status(500).json({ message: err?.message || "Server error" });
   }
 });
 
@@ -39,7 +40,6 @@ router.post("/", authorize("TECHNICIAN"), async (req: AuthRequest, res: Response
       include: { request: { select: { requestNumber: true, title: true } } },
     });
 
-    // Notify managers
     const managers = await prisma.user.findMany({ where: { role: Role.MANAGER, isActive: true } });
     for (const manager of managers) {
       await prisma.notification.create({
@@ -48,12 +48,13 @@ router.post("/", authorize("TECHNICIAN"), async (req: AuthRequest, res: Response
     }
 
     res.status(201).json(spare);
-  } catch {
-    res.status(500).json({ message: "Server error" });
+  } catch (err: any) {
+    console.error("[POST /spares]", err?.message);
+    res.status(500).json({ message: err?.message || "Server error" });
   }
 });
 
-// PUT /api/spares/:id/approve — Manager approves spare request
+// PUT /api/spares/:id/approve — Manager approves
 router.put("/:id/approve", authorize("MANAGER"), async (req: AuthRequest, res: Response) => {
   try {
     const spare = await prisma.spareRequest.findUnique({ where: { id: req.params.id }, include: { requestedBy: true } });
@@ -64,7 +65,6 @@ router.put("/:id/approve", authorize("MANAGER"), async (req: AuthRequest, res: R
       data: { status: SpareStatus.APPROVED },
     });
 
-    // Notify storekeeper
     const storekeepers = await prisma.user.findMany({ where: { role: Role.STOREKEEPER, isActive: true } });
     for (const sk of storekeepers) {
       await prisma.notification.create({
@@ -73,8 +73,9 @@ router.put("/:id/approve", authorize("MANAGER"), async (req: AuthRequest, res: R
     }
 
     res.json(updated);
-  } catch {
-    res.status(500).json({ message: "Server error" });
+  } catch (err: any) {
+    console.error("[PUT /spares/approve]", err?.message);
+    res.status(500).json({ message: err?.message || "Server error" });
   }
 });
 
@@ -101,8 +102,9 @@ router.put("/:id/allocate", authorize("STOREKEEPER"), async (req: AuthRequest, r
     });
 
     res.json(updated);
-  } catch {
-    res.status(500).json({ message: "Server error" });
+  } catch (err: any) {
+    console.error("[PUT /spares/allocate]", err?.message);
+    res.status(500).json({ message: err?.message || "Server error" });
   }
 });
 
@@ -114,8 +116,9 @@ router.put("/:id/purchase", authorize("STOREKEEPER"), async (req: AuthRequest, r
       data: { status: SpareStatus.PURCHASE_REQUESTED },
     });
     res.json(updated);
-  } catch {
-    res.status(500).json({ message: "Server error" });
+  } catch (err: any) {
+    console.error("[PUT /spares/purchase]", err?.message);
+    res.status(500).json({ message: err?.message || "Server error" });
   }
 });
 

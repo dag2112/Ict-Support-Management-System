@@ -23,6 +23,16 @@ enum RequestStatus {
   ASSIGNED
   FIXED
   ESCALATED
+  NEED_SPARE
+  SPARE_ALLOCATED
+  PURCHASE_REQUESTED
+}
+
+enum SpareStatus {
+  PENDING
+  APPROVED
+  ALLOCATED
+  PURCHASE_REQUESTED
 }
 
 enum Urgency {
@@ -53,9 +63,11 @@ model User {
   submittedRequests  SupportRequest[] @relation("SubmittedBy")
   assignedRequests   SupportRequest[] @relation("AssignedTo")
   approvedRequests   SupportRequest[] @relation("ApprovedBy")
+  spareRequests      SpareRequest[]
   feedbacks          Feedback[]
   notifications      Notification[]
   auditLogs          AuditLog[]
+  assetHistories     AssetHistory[]
 }
 
 model SupportRequest {
@@ -83,8 +95,26 @@ model SupportRequest {
   createdAt       DateTime      @default(now())
   updatedAt       DateTime      @updatedAt
 
+  spareRequests   SpareRequest[]
   feedback        Feedback?
   notifications   Notification[]
+}
+
+model SpareRequest {
+  id            String      @id @default(cuid())
+  spareName     String
+  quantity      Int         @default(1)
+  description   String?
+  status        SpareStatus @default(PENDING)
+
+  requestId     String
+  request       SupportRequest @relation(fields: [requestId], references: [id])
+
+  requestedById String
+  requestedBy   User        @relation(fields: [requestedById], references: [id])
+
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
 }
 
 model Feedback {
@@ -114,6 +144,24 @@ model Asset {
 
   createdAt    DateTime    @default(now())
   updatedAt    DateTime    @updatedAt
+
+  history      AssetHistory[]
+}
+
+model AssetHistory {
+  id        String   @id @default(cuid())
+  action    String
+  oldStatus String?
+  newStatus String?
+  notes     String?
+
+  assetId   String
+  asset     Asset    @relation(fields: [assetId], references: [id])
+
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+
+  createdAt DateTime @default(now())
 }
 
 model Notification {

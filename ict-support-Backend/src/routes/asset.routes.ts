@@ -63,16 +63,49 @@ router.post("/", authorize("MANAGER", "ADMIN"), async (req: AuthRequest, res: Re
 router.put("/:id", authorize("MANAGER", "ADMIN"), async (req: AuthRequest, res: Response) => {
   try {
     const { type, model, location, status, notes } = req.body;
+    const existing = await prisma.asset.findUnique({ where: { id: req.params.id } });
+    if (!existing) return res.status(404).json({ message: "Asset not found" });
+
     const asset = await prisma.asset.update({
       where: { id: req.params.id },
       data: { type, model, location, status: status as AssetStatus, notes },
     });
+
+    // Record history if status changed
+    if (status && status !== existing.status) {
+      await prisma.assetHistory.create({
+        data: {
+          action: "STATUS_CHANGE",
+          oldStatus: existing.status,
+          newStatus: status,
+          notes: notes || null,
+          assetId: asset.id,
+          userId: req.user!.userId,
+        },
+      });
+    }
+
     await prisma.auditLog.create({
       data: { action: "UPDATE_ASSET", entity: "Asset", entityId: asset.id, userId: req.user!.userId },
     });
     res.json(asset);
-  } catch {
-    res.status(500).json({ message: "Server error" });
+  } catch (err: any) {
+    console.error("[PUT /assets]", err?.message);
+    res.status(500).json({ message: err?.message || "Server error" });
+  }
+});
+
+// GET /api/assets/:id/history — Asset maintenance history
+router.get("/:id/history", authorize("TECHNICIAN", "MANAGER", "ADMIN"), async (req, res: Response) => {
+  try {
+    const history = await prisma.assetHistory.findMany({
+      where: { assetId: req.params.id },
+      include: { user: { select: { name: true, role: true } } },
+      orderBy: { createdAt: "desc" },
+    });
+    res.json(history);
+  } catch (err: any) {
+    res.status(500).json({ message: err?.message || "Server error" });
   }
 });
 
