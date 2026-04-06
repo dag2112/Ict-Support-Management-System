@@ -49,7 +49,7 @@ export default function TasksPage() {
           className="border border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white rounded-lg px-4 py-2 text-sm w-64 focus:outline-none focus:ring-2 focus:ring-blue-500" />
         <select value={filterStatus} onChange={(e) => setFilterStatus(e.target.value)}
           className="border border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
-          {["All", "ASSIGNED", "FIXED", "ESCALATED", "NEED_SPARE"].map((s) => (
+          {["All", "ASSIGNED", "FIXED", "ESCALATED"].map((s) => (
             <option key={s} value={s}>{s === "All" ? "All" : s}</option>
           ))}
         </select>
@@ -98,17 +98,19 @@ export default function TasksPage() {
             {/* Actions */}
             {r.status === "ASSIGNED" && (
               <div className="flex gap-2 flex-wrap mt-2">
-                <button onClick={() => updateStatus(r.id, "FIXED", "Issue resolved successfully.")} disabled={acting === r.id}
-                  className="text-sm bg-green-100 dark:bg-green-900/40 text-green-700 dark:text-green-300 px-4 py-1.5 rounded-full hover:bg-green-200 disabled:opacity-50 transition-colors">
+                <button
+                  onClick={() => updateStatus(r.id, "FIXED", "Issue resolved successfully.")}
+                  disabled={acting === r.id}
+                  className="text-sm bg-green-100 dark:bg-green-900/40 text-green-700 dark:text-green-300 px-4 py-1.5 rounded-full hover:bg-green-200 disabled:opacity-50 transition-colors"
+                >
                   {acting === r.id ? "Updating..." : "✓ Mark Fixed"}
                 </button>
-                <button onClick={() => updateStatus(r.id, "ESCALATED")} disabled={acting === r.id}
-                  className="text-sm bg-orange-100 dark:bg-orange-900/40 text-orange-700 dark:text-orange-300 px-4 py-1.5 rounded-full hover:bg-orange-200 disabled:opacity-50 transition-colors">
+                <button
+                  onClick={() => updateStatus(r.id, "ESCALATED")}
+                  disabled={acting === r.id}
+                  className="text-sm bg-orange-100 dark:bg-orange-900/40 text-orange-700 dark:text-orange-300 px-4 py-1.5 rounded-full hover:bg-orange-200 disabled:opacity-50 transition-colors"
+                >
                   ⚠️ Escalate
-                </button>
-                <button onClick={() => updateStatus(r.id, "NEED_SPARE")} disabled={acting === r.id}
-                  className="text-sm bg-purple-100 dark:bg-purple-900/40 text-purple-700 dark:text-purple-300 px-4 py-1.5 rounded-full hover:bg-purple-200 disabled:opacity-50 transition-colors">
-                  🔩 Need Spare
                 </button>
               </div>
             )}

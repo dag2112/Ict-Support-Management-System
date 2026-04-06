@@ -82,7 +82,14 @@ export default function DashboardPage() {
     </div>
   );
 
-  // ADMIN
+  if (user.role === "STOREKEEPER") return (
+    <div>
+      <h1 className="text-2xl font-bold mb-6 dark:text-white">Store Keeper Dashboard</h1>
+      <p className="text-gray-500 dark:text-gray-400 mb-6">Manage ICT assets and equipment inventory.</p>
+      <Link href="/dashboard/assets" className="bg-blue-900 text-white px-5 py-2 rounded-lg hover:bg-blue-800 text-sm font-medium">Manage Assets</Link>
+    </div>
+  );
+
   return (
     <div>
       <h1 className="text-2xl font-bold mb-6 dark:text-white">Admin Dashboard</h1>

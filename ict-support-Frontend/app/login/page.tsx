@@ -5,10 +5,11 @@ import { useAuth } from "@/context/AuthContext";
 import Link from "next/link";
 
 const DEMO_ACCOUNTS = [
-  { email: "abebe@woldia.edu.et", password: "Abebe@1234", role: "Requester" },
-  { email: "yonas@woldia.edu.et", password: "Yonas@1234", role: "Technician" },
-  { email: "meron@woldia.edu.et", password: "Meron@1234", role: "Manager" },
-  { email: "admin@woldia.edu.et", password: "Admin@1234", role: "Admin" },
+  { email: "abebe@woldia.edu.et",  password: "Abebe@1234",  role: "Requester" },
+  { email: "yonas@woldia.edu.et",  password: "Yonas@1234",  role: "Technician" },
+  { email: "meron@woldia.edu.et",  password: "Meron@1234",  role: "Manager" },
+  { email: "dawit@woldia.edu.et",  password: "Dawit@1234",  role: "Store Keeper" },
+  { email: "admin@woldia.edu.et",  password: "Admin@1234",  role: "Admin" },
 ];
 
 function Toast({ message, onClose }: { message: string; onClose: () => void }) {
