@@ -26,22 +26,40 @@ router.get("/", async (req: AuthRequest, res: Response) => {
     const { userId, role } = req.user!;
     const where: any = {};
 
+    // Role-based scoping
     if (role === "REQUESTER") where.submittedById = userId;
     if (role === "TECHNICIAN") where.assignedToId = userId;
+
+    // Filters
     if (status) where.status = status as RequestStatus;
     if (urgency) where.urgency = urgency as Urgency;
     if (issueType) where.issueType = issueType as string;
+
+    // Search — wrap in AND so it combines with other filters
     if (search) {
-      where.OR = [
-        { title: { contains: search as string, mode: "insensitive" } },
-        { requestNumber: { contains: search as string, mode: "insensitive" } },
-        { description: { contains: search as string, mode: "insensitive" } },
+      const s = search as string;
+      where.AND = [
+        {
+          OR: [
+            { title: { contains: s, mode: "insensitive" } },
+            { requestNumber: { contains: s, mode: "insensitive" } },
+            { description: { contains: s, mode: "insensitive" } },
+            { submittedBy: { name: { contains: s, mode: "insensitive" } } },
+            { issueType: { contains: s, mode: "insensitive" } },
+          ],
+        },
       ];
     }
 
     const skip = (Number(page) - 1) * Number(limit);
     const [requests, total] = await Promise.all([
-      prisma.supportRequest.findMany({ where, select: requestSelect, orderBy: { createdAt: "desc" }, skip, take: Number(limit) }),
+      prisma.supportRequest.findMany({
+        where,
+        select: requestSelect,
+        orderBy: { createdAt: "desc" },
+        skip,
+        take: Number(limit),
+      }),
       prisma.supportRequest.count({ where }),
     ]);
 

@@ -55,7 +55,10 @@ export const api = {
     request<any>(`/requests/${id}/escalate`, { method: "PUT" }),
 
   // Users
-  getUsers: () => request<any[]>("/users"),
+  getUsers: (params?: Record<string, string>) => {
+    const qs = params ? "?" + new URLSearchParams(params).toString() : "";
+    return request<any[]>(`/users${qs}`);
+  },
   getTechnicians: () => request<any[]>("/users/technicians"),
   createUser: (data: any) =>
     request<any>("/users", { method: "POST", body: JSON.stringify(data) }),

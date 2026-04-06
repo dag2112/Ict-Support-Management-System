@@ -9,12 +9,27 @@ const router = Router();
 router.use(authenticate);
 
 // GET /api/users — Manager/Admin: list all users
-router.get("/", authorize("MANAGER", "ADMIN"), async (_req, res: Response) => {
-  const users = await prisma.user.findMany({
-    select: { id: true, name: true, email: true, role: true, department: true, phone: true, isActive: true, createdAt: true },
-    orderBy: { createdAt: "desc" },
-  });
-  res.json(users);
+router.get("/", authorize("MANAGER", "ADMIN"), async (req, res: Response) => {
+  try {
+    const { search, role: roleFilter } = req.query;
+    const where: any = {};
+    if (roleFilter) where.role = roleFilter as Role;
+    if (search) {
+      where.OR = [
+        { name: { contains: search as string, mode: "insensitive" } },
+        { email: { contains: search as string, mode: "insensitive" } },
+        { department: { contains: search as string, mode: "insensitive" } },
+      ];
+    }
+    const users = await prisma.user.findMany({
+      where,
+      select: { id: true, name: true, email: true, role: true, department: true, phone: true, isActive: true, createdAt: true },
+      orderBy: { createdAt: "desc" },
+    });
+    res.json(users);
+  } catch {
+    res.status(500).json({ message: "Server error" });
+  }
 });
 
 // GET /api/users/technicians — Manager: list technicians

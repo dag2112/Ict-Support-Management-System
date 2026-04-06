@@ -1,6 +1,7 @@
 "use client";
 import { useState, useEffect } from "react";
 import { api } from "@/lib/api";
+import { useAuth } from "@/context/AuthContext";
 
 const roleColors: Record<string, string> = {
   REQUESTER:  "bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300",
@@ -20,14 +21,20 @@ export default function UsersPage() {
   const [error, setError] = useState("");
   const [search, setSearch] = useState("");
   const [filterRole, setFilterRole] = useState("All");
+  const { user: currentUser } = useAuth();
 
   const fetchUsers = async () => {
-    try { setUsers(await api.getUsers()); }
+    try {
+      const params: Record<string, string> = {};
+      if (search) params.search = search;
+      if (filterRole !== "All") params.role = filterRole;
+      setUsers(await api.getUsers(params));
+    }
     catch (e) { console.error(e); }
     finally { setLoading(false); }
   };
 
-  useEffect(() => { fetchUsers(); }, []);
+  useEffect(() => { fetchUsers(); }, [search, filterRole]);
 
   const addUser = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -83,11 +90,8 @@ export default function UsersPage() {
           </thead>
           <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
             {loading && <tr><td colSpan={6} className="px-4 py-8 text-center text-gray-400">Loading...</td></tr>}
-            {users.filter((u) => {
-              const matchSearch = u.name?.toLowerCase().includes(search.toLowerCase()) || u.email?.toLowerCase().includes(search.toLowerCase());
-              const matchRole = filterRole === "All" || u.role === filterRole;
-              return matchSearch && matchRole;
-            }).map((u) => (
+            {!loading && users.length === 0 && <tr><td colSpan={6} className="px-4 py-8 text-center text-gray-400">No users found.</td></tr>}
+            {users.map((u) => (
               <tr key={u.id} className="hover:bg-gray-50 dark:hover:bg-gray-700/50">
                 <td className="px-4 py-3 font-medium dark:text-gray-200">{u.name}</td>
                 <td className="px-4 py-3 text-gray-500 dark:text-gray-400">{u.email}</td>
@@ -95,7 +99,9 @@ export default function UsersPage() {
                 <td className="px-4 py-3 text-gray-500 dark:text-gray-400">{u.department ?? "—"}</td>
                 <td className="px-4 py-3"><span className={`text-xs font-medium ${u.isActive ? "text-green-600 dark:text-green-400" : "text-red-500 dark:text-red-400"}`}>{u.isActive ? "Active" : "Inactive"}</span></td>
                 <td className="px-4 py-3">
-                  {u.isActive && <button onClick={() => deleteUser(u.id)} className="text-xs text-red-500 hover:text-red-700 dark:text-red-400">Deactivate</button>}
+                  {currentUser?.role === "ADMIN" && u.isActive && (
+                    <button onClick={() => deleteUser(u.id)} className="text-xs text-red-500 hover:text-red-700 dark:text-red-400">Deactivate</button>
+                  )}
                 </td>
               </tr>
             ))}
