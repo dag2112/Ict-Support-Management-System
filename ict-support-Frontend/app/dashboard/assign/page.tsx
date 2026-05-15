@@ -46,7 +46,7 @@ export default function AssignPage() {
       <div className="space-y-4">
         {!loading && filtered.length === 0 && <p className="text-gray-400">No approved requests awaiting assignment.</p>}
         {filtered.map((r) => (
-          <div key={r.id} className="bg-white dark:bg-gray-800 rounded-xl shadow p-5 flex items-center justify-between gap-4 border border-gray-100 dark:border-gray-700">
+          <div key={r.id} className="bg-white dark:bg-gray-800 rounded-xl shadow p-4 md:p-5 flex flex-col md:flex-row md:items-center justify-between gap-4 border border-gray-100 dark:border-gray-700">
             <div className="flex-1">
               <div className="flex items-center gap-3 mb-1">
                 <span className="font-mono text-blue-700 dark:text-blue-400 text-xs">{r.requestNumber}</span>
@@ -61,14 +61,14 @@ export default function AssignPage() {
               </p>
               {r.location && <p className="text-xs text-gray-400 mt-0.5">📍 {r.location}</p>}
             </div>
-            <div className="flex items-center gap-3">
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full md:w-auto">
               <select value={selected[r.id] ?? ""} onChange={(e) => setSelected({ ...selected, [r.id]: e.target.value })}
-                className="border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                className="border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 flex-1">
                 <option value="">Select technician</option>
                 {technicians.map((t) => <option key={t.id} value={t.id}>{t.name}</option>)}
               </select>
               <button onClick={() => assign(r.id)} disabled={!selected[r.id] || acting === r.id}
-                className="bg-blue-900 text-white px-4 py-2 rounded-lg text-sm hover:bg-blue-800 disabled:opacity-50">
+                className="bg-blue-900 text-white px-4 py-2 rounded-lg text-sm hover:bg-blue-800 disabled:opacity-50 whitespace-nowrap">
                 {acting === r.id ? "Assigning..." : "Assign"}
               </button>
             </div>

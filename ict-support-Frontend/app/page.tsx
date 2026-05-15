@@ -25,28 +25,24 @@ export default function HomePage() {
       </nav>
 
       {/* Hero */}
-      <section className="flex-1 flex flex-col items-center justify-center text-center px-6 py-20">
+      <section className="flex-1 flex flex-col items-center justify-center text-center px-6 py-12 md:py-20">
         <div className="inline-block bg-white/10 border border-white/20 text-blue-200 text-xs font-medium px-4 py-1.5 rounded-full mb-6 tracking-wide uppercase">
           Woldia University — ICT Directorate
         </div>
-        <h1 className="text-5xl md:text-6xl font-extrabold leading-tight max-w-3xl mb-6">
+        <h1 className="text-3xl md:text-5xl lg:text-6xl font-extrabold leading-tight max-w-3xl mb-6">
           ICT Support &<br />Management Platform
         </h1>
-        <p className="text-blue-200 text-lg max-w-xl mb-10 leading-relaxed">
+        <p className="text-blue-200 text-base md:text-lg max-w-xl mb-10 leading-relaxed">
           A centralized platform to submit, track, and resolve ICT support requests efficiently.
           Replacing paper-based processes with a modern, automated solution.
         </p>
         <div className="flex gap-4 flex-wrap justify-center">
-          <button
-            onClick={() => router.push("/login")}
-            className="bg-white text-blue-900 font-bold px-8 py-3 rounded-xl hover:bg-blue-50 transition-colors text-sm shadow-lg"
-          >
+          <button onClick={() => router.push("/login")}
+            className="bg-white text-blue-900 font-bold px-8 py-3 rounded-xl hover:bg-blue-50 transition-colors text-sm shadow-lg">
             Get Started →
           </button>
-          <a
-            href="#features"
-            className="border border-white/30 text-white px-8 py-3 rounded-xl hover:bg-white/10 transition-colors text-sm"
-          >
+          <a href="#features"
+            className="border border-white/30 text-white px-8 py-3 rounded-xl hover:bg-white/10 transition-colors text-sm">
             Learn More
           </a>
         </div>

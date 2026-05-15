@@ -7,7 +7,13 @@ const config: Config = {
     "./context/**/*.{js,ts,jsx,tsx,mdx}",
   ],
   darkMode: "class",
-  theme: { extend: {} },
+  theme: {
+    extend: {
+      screens: {
+        xs: "375px",
+      },
+    },
+  },
   plugins: [],
 };
 export default config;

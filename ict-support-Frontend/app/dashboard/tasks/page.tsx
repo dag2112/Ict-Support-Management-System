@@ -63,7 +63,7 @@ export default function TasksPage() {
         )}
 
         {filtered.map((r) => (
-          <div key={r.id} className="bg-white dark:bg-gray-800 rounded-xl shadow p-5 border border-gray-100 dark:border-gray-700">
+          <div key={r.id} className="bg-white dark:bg-gray-800 rounded-xl shadow p-4 md:p-5 border border-gray-100 dark:border-gray-700">
             <div className="flex items-start justify-between mb-3">
               <div>
                 <span className="font-mono text-blue-700 dark:text-blue-400 text-xs">{r.requestNumber}</span>

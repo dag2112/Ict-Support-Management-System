@@ -431,3 +431,24 @@ npm run start    # Start production server
 ---
 
 Developed by Group 4 — Woldia University, Department of Software Engineering, 2026.
+Based on the Requirement.md, the project uses Agile methodology. Here's what was applied throughout the development:
+
+Iterative Development — the system was built in increments: first the frontend scaffold, then backend API, then connecting them, then adding features one sprint at a time (attachments, dark mode, notifications, etc.).
+
+Modular Development — each feature was built as an independent module: Auth, Requests, Approvals, Assignments, Spares, Feedback, Reports, Assets. Each module has its own route file in the backend and its own page in the frontend.
+
+User Stories / Role-Based Design — every feature was built around the 6 user roles (Requester, Approver, Technician, Manager, Store Keeper, Admin), which is exactly how Agile user stories work — "As a Requester, I want to submit a request..."
+
+Continuous Feedback & Fixes — bugs were fixed as they were discovered (APPROVER missing from enum, storekeeper invalid credentials, mock data replaced with real DB, etc.) — this mirrors Agile's continuous improvement cycle.
+
+Three-Tier Architecture (as specified in the SDD):
+
+Presentation Layer → Next.js Frontend
+Application Layer → Express.js Backend (Node.js API Routes)
+Data Layer → PostgreSQL + Prisma ORM
+Testing Methodology used:
+
+Unit-level: each API endpoint was tested directly with Invoke-RestMethod
+Integration: frontend connected to backend and tested end-to-end
+Role-based: each role's login and dashboard was verified
+The requirement document specifically states on page 13: "For the implementation of the ICT Support and Management Platform, we will adopt the Agile methodology" — and that's exactly what was followed.

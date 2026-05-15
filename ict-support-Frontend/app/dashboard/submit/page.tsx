@@ -76,7 +76,7 @@ export default function SubmitRequestPage() {
   }
 
   return (
-    <div className="max-w-2xl">
+    <div className="max-w-2xl w-full">
       <h1 className="text-2xl font-bold mb-6 dark:text-white">Submit ICT Support Request</h1>
       <div className="bg-white dark:bg-gray-800 rounded-xl shadow p-6 border border-gray-100 dark:border-gray-700">
         <form onSubmit={handleSubmit} className="space-y-5">
